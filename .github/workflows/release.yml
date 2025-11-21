@@ -27,7 +27,7 @@ jobs:
 
       - name: Rename artifact
         run: |
-          mv meta-overlayfs-*.zip meta-overlayfs-${{ steps.version.outputs.VERSION }}.zip
+          mv target/meta-overlayfs-*.zip meta-overlayfs-${{ steps.version.outputs.VERSION }}.zip
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
