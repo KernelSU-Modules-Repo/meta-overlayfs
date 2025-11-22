@@ -86,6 +86,13 @@ post_install_to_image() {
     done
 }
 
+# REPLACE
+mark_replace() {
+	replace_target="$1"
+	mkdir -p "$replace_target"
+	setfattr -n trusted.overlay.opaque -v y "$replace_target"
+}
+
 ui_print "- Using meta-overlayfs metainstall"
 
 install_module
