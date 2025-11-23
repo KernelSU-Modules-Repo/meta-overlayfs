@@ -6,14 +6,11 @@ use log::{info, warn};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 use procfs::process::Process;
-#[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{fd::AsFd, fs::CWD, mount::*};
 
 use crate::defs::{DISABLE_FILE_NAME, KSU_OVERLAY_SOURCE, SKIP_MOUNT_FILE_NAME, SYSTEM_RW_DIR};
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn mount_overlayfs(
     lower_dirs: &[String],
     lowest: &str,
@@ -79,7 +76,6 @@ pub fn mount_overlayfs(
     Ok(())
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
     info!(
         "bind mount {} -> {}",
@@ -103,7 +99,6 @@ pub fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
     Ok(())
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 fn mount_overlay_child(
     mount_point: &str,
     relative: &String,
@@ -141,7 +136,6 @@ fn mount_overlay_child(
     Ok(())
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn mount_overlay(
     root: &String,
     module_roots: &Vec<String>,
@@ -187,42 +181,14 @@ pub fn mount_overlay(
     Ok(())
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn umount_dir(src: impl AsRef<Path>) -> Result<()> {
     unmount(src.as_ref(), UnmountFlags::empty())
         .with_context(|| format!("Failed to umount {}", src.as_ref().display()))?;
     Ok(())
 }
 
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn mount_overlay(
-    _root: &String,
-    _module_roots: &Vec<String>,
-    _workdir: Option<PathBuf>,
-    _upperdir: Option<PathBuf>,
-) -> Result<()> {
-    unimplemented!("mount_overlay is only supported on Linux/Android")
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn mount_overlayfs(
-    _lower_dirs: &[String],
-    _lowest: &str,
-    _upperdir: Option<PathBuf>,
-    _workdir: Option<PathBuf>,
-    _dest: impl AsRef<Path>,
-) -> Result<()> {
-    unimplemented!("mount_overlayfs is only supported on Linux/Android")
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn bind_mount(_from: impl AsRef<Path>, _to: impl AsRef<Path>) -> Result<()> {
-    unimplemented!("bind_mount is only supported on Linux/Android")
-}
-
 // ========== Mount coordination logic (from init_event.rs) ==========
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 fn mount_partition(partition_name: &str, lowerdir: &Vec<String>) -> Result<()> {
     if lowerdir.is_empty() {
         warn!("partition: {partition_name} lowerdir is empty");
@@ -251,7 +217,6 @@ fn mount_partition(partition_name: &str, lowerdir: &Vec<String>) -> Result<()> {
 /// Collect enabled module IDs from metadata directory
 ///
 /// Reads module list and status from metadata directory, returns enabled module IDs
-#[cfg(any(target_os = "linux", target_os = "android"))]
 fn collect_enabled_modules(metadata_dir: &str) -> Result<Vec<String>> {
     let dir = std::fs::read_dir(metadata_dir)
         .with_context(|| format!("Failed to read metadata directory: {}", metadata_dir))?;
@@ -298,7 +263,6 @@ fn collect_enabled_modules(metadata_dir: &str) -> Result<Vec<String>> {
 /// Parameters:
 /// - metadata_dir: Metadata directory, stores module.prop, disable, skip_mount, etc.
 /// - content_dir: Content directory, stores system/, vendor/ and other partition content (ext4 image mount point)
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn mount_modules_systemlessly(metadata_dir: &str, content_dir: &str) -> Result<()> {
     info!("Scanning modules (dual-directory mode)");
     info!("  Metadata: {}", metadata_dir);
@@ -368,9 +332,4 @@ pub fn mount_modules_systemlessly(metadata_dir: &str, content_dir: &str) -> Resu
 
     info!("All partitions processed");
     Ok(())
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn mount_modules_systemlessly(_metadata_dir: &str, _content_dir: &str) -> Result<()> {
-    unimplemented!("mount_modules_systemlessly is only supported on Linux/Android")
 }
