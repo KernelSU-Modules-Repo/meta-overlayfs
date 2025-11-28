@@ -57,7 +57,7 @@ else
     truncate -s ${IMG_SIZE_MB}M "$IMG_FILE" || \
         abort "! Failed to create image file"
 
-    # Format as ext4 with small journal (8MB) for safety with minimal overhead
+    # Remove journal to prevent creating jbd2 sysfs node
     /system/bin/mke2fs -t ext4 -O ^has_journal -F "$IMG_FILE" >/dev/null 2>&1 || \
         abort "! Failed to format ext4 image"
 
