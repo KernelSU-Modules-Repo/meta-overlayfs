@@ -229,10 +229,6 @@ fn collect_enabled_modules(metadata_dir: &str) -> Result<Vec<String>> {
             continue;
         }
 
-        if path == Path::new(SYSTEM_RW_DIR) {
-            continue;
-        }
-
         let module_id = match entry.file_name().to_str() {
             Some(id) => id.to_string(),
             None => continue,
@@ -250,7 +246,7 @@ fn collect_enabled_modules(metadata_dir: &str) -> Result<Vec<String>> {
         }
 
         // Optional: verify module.prop exists
-        if !path.join("module.prop").exists() {
+        if !path.join("module.prop").exists() && !path.eq(Path::new(SYSTEM_RW_DIR)) {
             warn!("Module {} has no module.prop, skipping", module_id);
             continue;
         }
