@@ -5,6 +5,8 @@
 MODDIR="${0%/*}"
 IMG_FILE="$MODDIR/modules.img"
 MNT_DIR="$MODDIR/mnt"
+RW_ROOT="/data/adb/modules/.rw"
+PARTITIONS="system vendor product system_ext odm oem"
 
 # Log function
 log() {
@@ -42,6 +44,27 @@ BINARY="$MODDIR/meta-overlayfs"
 if [ ! -f "$BINARY" ]; then
     log "ERROR: Binary not found: $BINARY"
     exit 1
+fi
+
+# Special .rw handling
+if [ -d "$RW_ROOT" ]; then
+    log "Applying SELinux contexts for RW partition structures"
+
+    for part in $PARTITIONS; do
+        PART_DIR="$RW_ROOT/$part"
+        REFERENCE_PATH="/$part"
+        if [ -d "$PART_DIR" ] && [ -e "$REFERENCE_PATH" ]; then
+            chcon --reference="$REFERENCE_PATH" "$PART_DIR" 2>/dev/null
+            UPPER_DIR="$PART_DIR/upperdir"
+            if [ -d "$UPPER_DIR" ]; then
+                chcon --reference="$PART_DIR" "$UPPER_DIR" 2>/dev/null
+            fi
+            WORK_DIR="$PART_DIR/workdir"
+            if [ -d "$WORK_DIR" ]; then
+                chcon --reference="$PART_DIR" "$WORK_DIR" 2>/dev/null
+            fi
+        fi
+    done
 fi
 
 # Set dual-directory environment variables
