@@ -29,6 +29,7 @@ if ! mountpoint -q "$MNT_DIR" 2>/dev/null; then
     mkdir -p "$MNT_DIR"
 
     # Mount the ext4 image
+    chcon u:object_r:ksu_file:s0 "$IMG_FILE" 2>/dev/null
     mount -t ext4 -o loop,rw,noatime "$IMG_FILE" "$MNT_DIR" || {
         log "ERROR: Failed to mount image"
         exit 1
