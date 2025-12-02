@@ -13,6 +13,7 @@ ensure_image_mounted() {
     if ! mountpoint -q "$MNT_DIR" 2>/dev/null; then
         ui_print "- Mounting modules image"
         mkdir -p "$MNT_DIR"
+        chcon u:object_r:ksu_file:s0 "$IMG_FILE" 2>/dev/null
         mount -t ext4 -o loop,rw,noatime "$IMG_FILE" "$MNT_DIR" || {
             abort "! Failed to mount modules image"
         }
